@@ -21,7 +21,7 @@ jobs:
         run: npm install axios
 
       - name: Create random vulnerability issues
-        env:
-          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}  # Ensure this matches the variable in create-issues.js
+        env:  # Pass the secret token as an environment variable
+          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}  # Use the secret token directly
         run: |
           node create-issues.js
