@@ -22,6 +22,6 @@ jobs:
 
       - name: Create random vulnerability issues
         env:
-          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}  # Ensure this matches the variable in create-issues.js
         run: |
           node create-issues.js
