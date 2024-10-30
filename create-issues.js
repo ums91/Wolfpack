@@ -91,8 +91,62 @@ async function createGitHubIssue() {
         );
 
         console.log(`Issue created: ${response.data.html_url}`);
+
+        // Add a comment to the issue
+        await addCommentToIssue(repoOwner, repoName, response.data.number);
+        // Close the issue
+        await closeIssue(repoOwner, repoName, response.data.number);
+
     } catch (error) {
         console.error('Error creating issue:', error.response ? error.response.data : error.message);
+        process.exit(1);
+    }
+}
+
+// Function to add a comment to an issue
+async function addCommentToIssue(repoOwner, repoName, issueNumber) {
+    const commentData = {
+        body: 'This Vulnerability has been remediated/Patched.',
+    };
+
+    try {
+        await axios.post(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}/comments`,
+            commentData,
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        console.log(`Comment added to issue #${issueNumber}`);
+    } catch (error) {
+        console.error('Error adding comment:', error.response ? error.response.data : error.message);
+        process.exit(1);
+    }
+}
+
+// Function to close an issue
+async function closeIssue(repoOwner, repoName, issueNumber) {
+    const issueData = {
+        state: 'closed',
+    };
+
+    try {
+        await axios.patch(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}`,
+            issueData,
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        console.log(`Issue #${issueNumber} closed.`);
+    } catch (error) {
+        console.error('Error closing issue:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 }
