@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const GITHUB_TOKEN = process.env.NEW_TOKEN; // GitHub token stored in repository secrets
+const GITHUB_TOKEN = process.env.WOLFPACK_TOKEN; // GitHub token stored in repository secrets
 const REPO_OWNER = 'ums91'; // Your GitHub username
 const REPO_NAME = 'Wolfpack'; // Your repository name
 
