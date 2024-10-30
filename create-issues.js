@@ -48,6 +48,17 @@ function getRandomProduct() {
     return products[Math.floor(Math.random() * products.length)];
 }
 
+// Function to get a random security severity label
+function getRandomSeverityLabel() {
+    const severityLabels = [
+        'security-issue-severity:High',
+        'security-issue-severity:Low',
+        'Security-Issue-Severity:Medium',
+        'security-issue-severity:Severe'
+    ];
+    return severityLabels[Math.floor(Math.random() * severityLabels.length)];
+}
+
 // Function to create an issue on GitHub
 async function createGitHubIssue() {
     const repoOwner = 'ums91';  // Your GitHub username
@@ -76,6 +87,8 @@ async function createGitHubIssue() {
               `- **Remediation Deadline**: ${formattedDate}\n\n` +
               `### Recommended Action\n` +
               `Please review the vulnerability and apply the recommended patches or mitigations.`,
+        labels: ["Vulnerability", "Pillar:Program", getRandomSeverityLabel()],
+        milestone: 1 // Assuming milestone ID 1 for "2024Q2"
     };
 
     try {
@@ -91,11 +104,21 @@ async function createGitHubIssue() {
         );
 
         console.log(`Issue created: ${response.data.html_url}`);
+        const issueNumber = response.data.number;
 
-        // Add a comment to the issue
-        await addCommentToIssue(repoOwner, repoName, response.data.number);
-        // Close the issue
-        await closeIssue(repoOwner, repoName, response.data.number);
+        // Schedule actions with delays
+        setTimeout(async () => {
+            await addCommentToIssue(repoOwner, repoName, issueNumber);
+            
+            setTimeout(async () => {
+                await updateLabels(repoOwner, repoName, issueNumber);
+                
+                setTimeout(async () => {
+                    await closeIssue(repoOwner, repoName, issueNumber);
+                }, 5 * 60 * 1000);  // Wait 5 minutes to close the issue
+            }, 2 * 60 * 1000);  // Wait 2 minutes to update labels
+
+        }, 5 * 60 * 1000);  // Wait 5 minutes to post the comment
 
     } catch (error) {
         if (error.response && error.response.status === 403) {
@@ -129,6 +152,30 @@ async function addCommentToIssue(repoOwner, repoName, issueNumber) {
         console.log(`Comment added to issue #${issueNumber}`);
     } catch (error) {
         console.error('Error adding comment:', error.response ? error.response.data : error.message);
+        process.exit(1);
+    }
+}
+
+// Function to update labels on an issue
+async function updateLabels(repoOwner, repoName, issueNumber) {
+    const labelData = {
+        labels: ["Pillar:Program", "Remediated_Fixed_Patched"]
+    };
+
+    try {
+        await axios.patch(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}`,
+            labelData,
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        console.log(`Labels updated on issue #${issueNumber}`);
+    } catch (error) {
+        console.error('Error updating labels:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 }
