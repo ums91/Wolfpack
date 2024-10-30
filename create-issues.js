@@ -98,6 +98,12 @@ async function createGitHubIssue() {
         await closeIssue(repoOwner, repoName, response.data.number);
 
     } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Handle rate limiting
+            console.error('Rate limit hit. Retrying after 60 seconds...');
+            await new Promise(resolve => setTimeout(resolve, 60000)); // Wait for 60 seconds
+            return createGitHubIssue(); // Retry creating the issue
+        }
         console.error('Error creating issue:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
@@ -151,12 +157,16 @@ async function closeIssue(repoOwner, repoName, issueNumber) {
     }
 }
 
-// Function to create multiple issues
+// Function to create multiple issues with a delay
 async function createMultipleIssues() {
     const numberOfIssues = Math.floor(Math.random() * 16) + 5; // Random number between 5 and 20
 
     for (let i = 0; i < numberOfIssues; i++) {
         await createGitHubIssue(); // Create the issue
+        if (i < numberOfIssues - 1) { // Don't wait after the last issue
+            console.log('Waiting for 15 minutes before creating the next issue...');
+            await new Promise(resolve => setTimeout(resolve, 15 * 60 * 1000)); // Wait for 15 minutes
+        }
     }
 }
 
