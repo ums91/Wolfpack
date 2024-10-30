@@ -9,7 +9,7 @@ if (!GITHUB_TOKEN) {
     process.exit(1);
 }
 
-// Function to generate random number
+// Function to generate a random number
 function getRandomNumber() {
     return Math.floor(Math.random() * 100000);  // Adjust the range as needed
 }
@@ -97,5 +97,14 @@ async function createGitHubIssue() {
     }
 }
 
-// Call the function to create the issue
-createGitHubIssue();
+// Function to create multiple issues
+async function createMultipleIssues() {
+    const numberOfIssues = Math.floor(Math.random() * 9) + 1; // Random number between 1 and 9
+
+    for (let i = 0; i < numberOfIssues; i++) {
+        await createGitHubIssue(); // Create the issue
+    }
+}
+
+// Call the function to create multiple issues
+createMultipleIssues();
