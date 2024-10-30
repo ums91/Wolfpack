@@ -153,7 +153,7 @@ async function closeIssue(repoOwner, repoName, issueNumber) {
 
 // Function to create multiple issues
 async function createMultipleIssues() {
-    const numberOfIssues = Math.floor(Math.random() * 9) + 1; // Random number between 1 and 9
+    const numberOfIssues = Math.floor(Math.random() * 16) + 5; // Random number between 5 and 20
 
     for (let i = 0; i < numberOfIssues; i++) {
         await createGitHubIssue(); // Create the issue
