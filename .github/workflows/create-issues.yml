@@ -1,0 +1,26 @@
+name: Create Vulnerability Issues
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # This will run daily at midnight UTC
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'  # Specify your desired Node.js version
+
+      - name: Install dependencies
+        run: npm install axios
+
+      - name: Create random vulnerability issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}
+        run: |
+          node create-issues.js
