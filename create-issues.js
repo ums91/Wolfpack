@@ -206,7 +206,7 @@ async function closeIssue(repoOwner, repoName, issueNumber) {
 
 // Function to create multiple issues with a delay
 async function createMultipleIssues() {
-    const numberOfIssues = Math.floor(Math.random() * 16) + 5; // Random number between 5 and 20
+    const numberOfIssues = Math.floor(Math.random() * 14) + 2; // Random number between 2 and 15
 
     for (let i = 0; i < numberOfIssues; i++) {
         await createGitHubIssue(); // Create the issue
