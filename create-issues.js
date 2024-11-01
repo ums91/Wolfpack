@@ -209,7 +209,8 @@ async function closeIssue(repoOwner, repoName, issueNumber) {
 async function updateReadmeWithIssues(issueNumbers, issueCount) {
     const repoOwner = 'ums91';
     const repoName = 'Wolfpack';
-    const branchName = `update-readme-${new Date().toISOString().slice(0, 10)}`;
+    const currentDate = new Date();
+    const branchName = `update-readme-${currentDate.toISOString().slice(0, 10)}-${currentDate.getTime()}`;
     const readmeContent = `## Issues Created Today\n\nTotal Issues Created: ${issueCount}\n\n${issueNumbers.map(num => `- Issue #${num}`).join('\n')}\n`;
 
     try {
@@ -227,18 +228,26 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         });
         const mainBranchSha = mainBranchResponse.data.object.sha;
 
-        // Create a new branch using the main branch SHA
-        await axios.post(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
-            { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
+        // Attempt to create a new branch
+        try {
+            await axios.post(
+                `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
+                { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
+                { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+            );
+        } catch (branchError) {
+            if (branchError.response && branchError.response.status === 422 && branchError.response.data.message === 'Reference already exists') {
+                console.log(`Branch ${branchName} already exists, proceeding with existing branch.`);
+            } else {
+                throw branchError;
+            }
+        }
 
-        // Update the README on the new branch using the README's SHA
+        // Update the README on the branch
         await axios.put(
             `https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`,
             {
-                message: `Issues for today (${new Date().toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
+                message: `Issues for today (${currentDate.toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
                 content: Buffer.from(readmeContent).toString('base64'),
                 branch: branchName,
                 sha: readmeSha, // Use the SHA from the README file
@@ -250,7 +259,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/pulls`,
             {
-                title: `Daily update for issues created on ${new Date().toLocaleDateString('en-GB')}`,
+                title: `Daily update for issues created on ${currentDate.toLocaleDateString('en-GB')}`,
                 head: branchName,
                 base: 'main',
             },
@@ -264,6 +273,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         process.exit(1);
     }
 }
+
 
 
 // Function to create multiple issues with a delay and update README after all issues
