@@ -64,7 +64,7 @@ async function createGitHubIssue() {
     const repoOwner = 'ums91';
     const repoName = 'Wolfpack';
 
-    const cveID = CVE-${getRandomNumber()};
+    const cveID = `CVE-${getRandomNumber()}`;
     const vendor = getRandomVendor();
     const product = getRandomProduct();
     const currentDate = new Date();
@@ -78,32 +78,32 @@ async function createGitHubIssue() {
     });
 
     const issueData = {
-        title: Vulnerability Alert ${cveID},
-        body: ### Vulnerability Details\n +
-              - **CVE ID**: ${cveID}\n +
-              - **Vendor**: ${vendor}\n +
-              - **Product**: ${product}\n +
-              - **Description**: No description available\n +
-              - **Remediation Deadline**: ${formattedDate}\n\n +
-              ### Recommended Action\n +
-              Please review the vulnerability and apply the recommended patches or mitigations.,
+        title: `Vulnerability Alert ${cveID}`,
+        body: `### Vulnerability Details\n
+              - **CVE ID**: ${cveID}\n
+              - **Vendor**: ${vendor}\n
+              - **Product**: ${product}\n
+              - **Description**: No description available\n
+              - **Remediation Deadline**: ${formattedDate}\n\n
+              ### Recommended Action\n
+              Please review the vulnerability and apply the recommended patches or mitigations.`,
         labels: ["Vulnerability", "Pillar:Program", getRandomSeverityLabel()],
         milestone: 1 // Assuming milestone ID 1 for "2024Q2"
     };
 
     try {
         const response = await axios.post(
-            https://api.github.com/repos/${repoOwner}/${repoName}/issues,
+            `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
             issueData,
             {
                 headers: {
-                    Authorization: token ${GITHUB_TOKEN},
+                    Authorization: `token ${GITHUB_TOKEN}`,
                     'Content-Type': 'application/json',
                 },
             }
         );
 
-        console.log(Issue created: ${response.data.html_url});
+        console.log(`Issue created: ${response.data.html_url}`);
         const issueNumber = response.data.number;
 
         // Schedule actions with delays
@@ -132,6 +132,7 @@ async function createGitHubIssue() {
         process.exit(1);
     }
 }
+
 
 // Function to add a comment to an issue
 async function addCommentToIssue(repoOwner, repoName, issueNumber) {
