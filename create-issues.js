@@ -142,21 +142,22 @@ async function addCommentToIssue(repoOwner, repoName, issueNumber) {
 
     try {
         await axios.post(
-            https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}/comments,
+            `https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueNumber}/comments`,
             commentData,
             {
                 headers: {
-                    Authorization: token ${GITHUB_TOKEN},
+                    Authorization: `token ${GITHUB_TOKEN}`,
                     'Content-Type': 'application/json',
                 },
             }
         );
-        console.log(Comment added to issue #${issueNumber});
+        console.log(`Comment added to issue #${issueNumber}`);
     } catch (error) {
         console.error('Error adding comment:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 }
+
 
 // Function to update labels on an issue
 async function updateLabels(repoOwner, repoName, issueNumber) {
