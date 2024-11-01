@@ -220,19 +220,19 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         });
         const mainBranchSha = mainBranchResponse.data.object.sha;
 
-        // Check if the branch already exists and create a unique branch name if needed
+        // Check if a branch with the intended name exists, and adjust if necessary
         let branchExists = true;
         while (branchExists) {
             try {
-                await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`, {
+                await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/${branchName}`, {
                     headers: { Authorization: `token ${GITHUB_TOKEN}` },
                 });
-                // Branch exists, so append a unique identifier to try a new name
+                // Branch exists; try a new name with a unique identifier
                 branchName = `update-readme-${currentDate.toISOString().slice(0, 10)}-${Math.floor(Math.random() * 100000)}`;
                 console.log(`Branch ${branchName} already exists. Trying a new name.`);
             } catch (branchError) {
                 if (branchError.response && branchError.response.status === 404) {
-                    // Branch does not exist, break the loop
+                    // Branch does not exist; proceed with this name
                     branchExists = false;
                 } else {
                     throw branchError;
@@ -240,7 +240,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
             }
         }
 
-        // Create the branch
+        // Create the new branch with a unique name
         await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
             { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
