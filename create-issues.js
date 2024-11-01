@@ -205,6 +205,44 @@ async function closeIssue(repoOwner, repoName, issueNumber) {
     }
 }
 
+// Add the merge function here
+async function mergePullRequest(repoOwner, repoName, pullRequestNumber) {
+    try {
+        const mergeResponse = await axios.put(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${pullRequestNumber}/merge`,
+            { commit_message: `Merging pull request #${pullRequestNumber}` },
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        console.log(`Pull request #${pullRequestNumber} merged: ${mergeResponse.data.html_url}`);
+    } catch (error) {
+        console.error('Error merging pull request:', error.response ? error.response.data : error.message);
+        process.exit(1);
+    }
+}
+
+// Add the delete branch function here
+async function deleteBranch(repoOwner, repoName, branchName) {
+    try {
+        await axios.delete(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                },
+            }
+        );
+        console.log(`Branch ${branchName} deleted.`);
+    } catch (error) {
+        console.error('Error deleting branch:', error.response ? error.response.data : error.message);
+        process.exit(1);
+    }
+}
+
 // Function to update the README file with issues created today
 async function updateReadmeWithIssues(issueNumbers, issueCount) {
     const repoOwner = 'ums91';
