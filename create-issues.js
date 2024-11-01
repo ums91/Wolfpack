@@ -274,7 +274,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 
 // Function to create multiple issues with a delay and update README after all issues
 async function createMultipleIssues() {
-    const numberOfIssues = Math.floor(Math.random() * 16); // Between 0 and 15 issues
+    const numberOfIssues = Math.floor(Math.random() * 11); // Between 0 and 10 issues
     const createdIssues = [];
 
     for (let i = 0; i < numberOfIssues; i++) {
@@ -290,6 +290,7 @@ async function createMultipleIssues() {
         await updateReadmeWithIssues(createdIssues, createdIssues.length);
     }
 }
+
 
 // Function to update the README file with issues created today
 async function updateReadmeWithIssues(issueNumbers, issueCount) {
