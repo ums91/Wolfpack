@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Get the GitHub token from environment variables
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.WOLFPACK_TOKEN;
 
 // Check if the token is defined
 if (!GITHUB_TOKEN) {
