@@ -212,41 +212,38 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
     const branchName = `update-readme-${new Date().toISOString().slice(0, 10)}`;
     const readmeContent = `## Issues Created Today\n\nTotal Issues Created: ${issueCount}\n\n${issueNumbers.map(num => `- Issue #${num}`).join('\n')}\n`;
 
-    // Create the branch, update README, commit, and merge
     try {
-        // Fetch README file and get its SHA
-        const response = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`, {
+        // Fetch the SHA of the README file
+        const readmeResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`, {
             headers: {
                 Authorization: `token ${GITHUB_TOKEN}`,
             },
         });
-        const sha = response.data.sha;
+        const readmeSha = readmeResponse.data.sha;
 
-        // Create a new branch
+        // Fetch the SHA of the main branch to use as the base reference
+        const mainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` },
+        });
+        const mainBranchSha = mainBranchResponse.data.object.sha;
+
+        // Create a new branch using the main branch SHA
         await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
-            { ref: `refs/heads/${branchName}`, sha: response.data.sha },
-            {
-                headers: {
-                    Authorization: `token ${GITHUB_TOKEN}`,
-                },
-            }
+            { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
 
-        // Update the README on the new branch
+        // Update the README on the new branch using the README's SHA
         await axios.put(
             `https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`,
             {
                 message: `Issues for today (${new Date().toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
                 content: Buffer.from(readmeContent).toString('base64'),
                 branch: branchName,
-                sha: sha,
+                sha: readmeSha, // Use the SHA from the README file
             },
-            {
-                headers: {
-                    Authorization: `token ${GITHUB_TOKEN}`,
-                },
-            }
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
 
         // Create a pull request to merge the branch
@@ -257,11 +254,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
                 head: branchName,
                 base: 'main',
             },
-            {
-                headers: {
-                    Authorization: `token ${GITHUB_TOKEN}`,
-                },
-            }
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
 
         console.log(`README updated with today's issue details and pull request created`);
@@ -271,6 +264,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         process.exit(1);
     }
 }
+
 
 // Function to create multiple issues with a delay and update README after all issues
 async function createMultipleIssues() {
