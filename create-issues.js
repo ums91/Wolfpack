@@ -250,12 +250,19 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         );
         console.log(`Branch ${branchName} created.`);
 
+        // Fetch the current README file to get the SHA
+        const readmeResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`, {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` },
+        });
+        const readmeSha = readmeResponse.data.sha; // Get the SHA of the current README
+
         // Update the README on the new branch
         await axios.put(
             `https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`,
             {
                 message: `Issues for today (${currentDate.toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
                 content: Buffer.from(readmeContent).toString('base64'),
+                sha: readmeSha, // Include the SHA of the README
                 branch: branchName,
             },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
@@ -289,6 +296,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         process.exit(1);
     }
 }
+
 
 // Main function to run the workflow
 async function main() {
