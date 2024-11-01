@@ -210,7 +210,8 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
     const repoOwner = 'ums91';
     const repoName = 'Wolfpack';
     const currentDate = new Date();
-    let branchName = `update-readme-${currentDate.toISOString().slice(0, 10)}`;
+    let branchNameBase = `update-readme-${currentDate.toISOString().slice(0, 10)}`;
+    let branchName = branchNameBase;
     const readmeContent = `## Issues Created Today\n\nTotal Issues Created: ${issueCount}\n\n${issueNumbers.map(num => `- Issue #${num}`).join('\n')}\n`;
 
     try {
@@ -220,20 +221,21 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         });
         const mainBranchSha = mainBranchResponse.data.object.sha;
 
-        // Check if a branch with the intended name exists, and adjust if necessary
-        let branchExists = true;
-        while (branchExists) {
+        // Generate a unique branch name by checking if each candidate exists
+        let suffix = 0;
+        while (true) {
             try {
                 await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/${branchName}`, {
                     headers: { Authorization: `token ${GITHUB_TOKEN}` },
                 });
-                // Branch exists; try a new name with a unique identifier
-                branchName = `update-readme-${currentDate.toISOString().slice(0, 10)}-${Math.floor(Math.random() * 100000)}`;
-                console.log(`Branch ${branchName} already exists. Trying a new name.`);
+                // Branch exists; increment suffix and try a new name
+                suffix += 1;
+                branchName = `${branchNameBase}-${suffix}`;
+                console.log(`Branch name conflict. Trying new branch name: ${branchName}`);
             } catch (branchError) {
                 if (branchError.response && branchError.response.status === 404) {
-                    // Branch does not exist; proceed with this name
-                    branchExists = false;
+                    // Branch does not exist; exit the loop
+                    break;
                 } else {
                     throw branchError;
                 }
@@ -267,8 +269,8 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
                 head: branchName,
                 base: 'main',
             },
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` }
+        });
 
         console.log(`README updated with today's issue details and pull request created`);
 
@@ -280,15 +282,15 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
                 commit_title: `Merge daily update branch ${branchName}`,
                 merge_method: 'merge',
             },
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` }
+        });
         console.log(`Pull request #${pullNumber} merged.`);
 
         // Delete the branch after merging
         await axios.delete(
             `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` }
+        });
         console.log(`Branch ${branchName} deleted after merge.`);
 
     } catch (error) {
