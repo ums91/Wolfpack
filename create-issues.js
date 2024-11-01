@@ -292,7 +292,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 // Main function to orchestrate issue creation and README update
 async function main() {
     const createdIssues = [];
-    const issueCount = 10; // Specify how many issues you want to create
+    const issueCount = 1; // Specify how many issues you want to create
 
     for (let i = 0; i < issueCount; i++) {
         const issueNumber = await createGitHubIssue();
