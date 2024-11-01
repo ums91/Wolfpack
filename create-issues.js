@@ -274,16 +274,15 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 
 // Function to create multiple issues with a delay and update README after all issues
 async function createMultipleIssues() {
-    // Set the number of issues to be between 0 and 15, inclusive
-    const numberOfIssues = Math.floor(Math.random() * 16);
+    const numberOfIssues = Math.floor(Math.random() * 16); // Between 0 and 15 issues
     const createdIssues = [];
 
     for (let i = 0; i < numberOfIssues; i++) {
         const issueNumber = await createGitHubIssue();
         createdIssues.push(issueNumber);
 
-        // Delay between issue creations to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Delay 15 minutes (15 * 60 * 1000 ms) between creating issues
+        await new Promise(resolve => setTimeout(resolve, 15 * 60 * 1000));
     }
 
     // Update the README with the created issues and their count
@@ -292,6 +291,56 @@ async function createMultipleIssues() {
     }
 }
 
+// Function to update the README file with issues created today
+async function updateReadmeWithIssues(issueNumbers, issueCount) {
+    const repoOwner = 'ums91';
+    const repoName = 'Wolfpack';
+    const branchName = `update-readme-${new Date().toISOString().slice(0, 10)}`;
+    const readmeContent = `## Issues Created Today\n\nTotal Issues Created: ${issueCount}\n\n${issueNumbers.map(num => `- Issue #${num}`).join('\n')}\n`;
+
+    try {
+        // Fetch the SHA of the main branch to use as the base reference
+        const mainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` },
+        });
+        const mainBranchSha = mainBranchResponse.data.object.sha;
+
+        // Create a new branch using the main branch SHA
+        await axios.post(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
+            { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+
+        // Update the README on the new branch
+        await axios.put(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`,
+            {
+                message: `Issues for today (${new Date().toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
+                content: Buffer.from(readmeContent).toString('base64'),
+                branch: branchName,
+            },
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+
+        // Create a pull request to merge the branch
+        await axios.post(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls`,
+            {
+                title: `Daily update for issues created on ${new Date().toLocaleDateString('en-GB')}`,
+                head: branchName,
+                base: 'main',
+            },
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+
+        console.log(`README updated with today's issue details and pull request created`);
+
+    } catch (error) {
+        console.error('Error updating README:', error.response ? error.response.data : error.message);
+        process.exit(1);
+    }
+}
+
 // Run the function
 createMultipleIssues().catch(console.error);
-
