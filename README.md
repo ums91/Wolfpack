@@ -1,1 +1,5 @@
-Just a Random Issue creator, uses Random Template, CVE's are random (not real)
+## Issues Created Today
+
+Total Issues Created: 1
+
+- Issue #85
