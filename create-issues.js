@@ -53,7 +53,7 @@ function getRandomSeverityLabel() {
     const severityLabels = [
         'security-issue-severity:High',
         'security-issue-severity:Low',
-        'Security-Issue-Severity:Medium',
+        'security-issue-severity:Medium',
         'security-issue-severity:Severe'
     ];
     return severityLabels[Math.floor(Math.random() * severityLabels.length)];
@@ -262,56 +262,47 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
             {
                 message: `Issues for today (${currentDate.toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
                 content: Buffer.from(readmeContent).toString('base64'),
-                sha: readmeSha, // Include the SHA of the README
-                branch: branchName,
+                sha: readmeSha, // Include the SHA of the current README
+                branch: branchName, // Specify the branch for the update
             },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
+        console.log(`README updated on branch ${branchName}.`);
 
-        // Create and merge a pull request
-        const pullRequestResponse = await axios.post(
+        // Create a pull request to merge the changes into the main branch
+        const pullRequestData = {
+            title: `Update README with issues created on ${currentDate.toLocaleDateString('en-GB')}`,
+            body: `This pull request updates the README file with the issues created on ${currentDate.toLocaleDateString('en-GB')}.`,
+            head: branchName,
+            base: 'main',
+        };
+        const prResponse = await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/pulls`,
-            {
-                title: `Daily Update: Issues created on ${currentDate.toLocaleDateString('en-GB')}`,
-                head: branchName,
-                base: 'main',
-                body: 'Automated update with issues created today.',
-            },
+            pullRequestData,
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-
-        console.log(`Pull request created: ${pullRequestResponse.data.html_url}`);
+        console.log(`Pull request created: ${prResponse.data.html_url}`);
         
-        // Merge the pull request
-        await axios.put(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${pullRequestResponse.data.number}/merge`,
-            {},
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
-
-        console.log(`Pull request #${pullRequestResponse.data.number} merged.`);
-
     } catch (error) {
         console.error('Error updating README:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 }
 
-
-// Main function to run the workflow
+// Main function to orchestrate issue creation and README update
 async function main() {
-    const issueNumbers = [];
-    const issueCount = 1; // Number of issues to create
+    const createdIssues = [];
+    const issueCount = 10; // Specify how many issues you want to create
 
     for (let i = 0; i < issueCount; i++) {
         const issueNumber = await createGitHubIssue();
-        issueNumbers.push(issueNumber);
+        createdIssues.push(issueNumber);
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before creating the next issue
     }
 
-    await updateReadmeWithIssues(issueNumbers, issueCount);
+    // Update the README with the issues created today
+    await updateReadmeWithIssues(createdIssues, issueCount);
 }
 
 // Run the main function
-main().catch(err => {
-    console.error('Error in main function:', err.message);
-});
+main();
