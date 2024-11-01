@@ -278,4 +278,20 @@ async function createMultipleIssues() {
     const numberOfIssues = Math.floor(Math.random() * 16);
     const createdIssues = [];
 
-    for (let i = 0; i < numberOfIssues;
+    for (let i = 0; i < numberOfIssues; i++) {
+        const issueNumber = await createGitHubIssue();
+        createdIssues.push(issueNumber);
+
+        // Delay between issue creations to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    // Update the README with the created issues and their count
+    if (createdIssues.length > 0) {
+        await updateReadmeWithIssues(createdIssues, createdIssues.length);
+    }
+}
+
+// Run the function
+createMultipleIssues().catch(console.error);
+
