@@ -265,7 +265,8 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 // Main function to execute the workflow
 async function main() {
     const issueNumbers = [];
-    const issueCount = Math.floor(Math.random() * 3); // Random number between 0 and 2
+    const issueCount = Math.floor(Math.random() * 3) + 1; // Random number between 1 and 3
+    console.log(`Attempting to create ${issueCount} issues.`);
 
     for (let i = 0; i < issueCount; i++) {
         const issueNumber = await createGitHubIssue();
