@@ -179,6 +179,11 @@ async function closeIssue(repoOwner, repoName, issueNumber) {
     }
 }
 
+// Function to generate a random string for branch naming
+function generateRandomString(length) {
+    return Math.random().toString(36).substring(2, 2 + length);
+}
+
 // Function to update the README file with issues created today
 async function updateReadmeWithIssues(issueNumbers, issueCount) {
     const repoOwner = 'ums91';
@@ -188,6 +193,27 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
     const readmeContent = `## Issues Created Today\n\nTotal Issues Created: ${issueCount}\n\n${issueNumbers.map(num => `- Issue #${num}`).join('\n')}\n`;
 
     try {
+        // Check if branch already exists
+        let branchExists = true;
+        let randomSuffix = '';
+
+        while (branchExists) {
+            try {
+                await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}${randomSuffix}`, {
+                    headers: { Authorization: `token ${GITHUB_TOKEN}` },
+                });
+                // If we reach here, the branch exists, so we generate a new name
+                randomSuffix = `-${generateRandomString(5)}`; // Add a random suffix
+            } catch (error) {
+                if (error.response.status === 404) {
+                    // Branch does not exist, we can use the current branch name
+                    branchExists = false;
+                } else {
+                    throw error; // Re-throw if it's a different error
+                }
+            }
+        }
+
         // Fetch the SHA of the main branch
         const mainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
             headers: { Authorization: `token ${GITHUB_TOKEN}` },
@@ -197,10 +223,10 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         // Create the new branch
         await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
-            { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
+            { ref: `refs/heads/${branchName}${randomSuffix}`, sha: mainBranchSha },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`Branch ${branchName} created.`);
+        console.log(`Branch ${branchName}${randomSuffix} created.`);
 
         // Fetch the current README file to get the SHA
         const readmeResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`, {
@@ -215,11 +241,11 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
                 message: `Issues for today (${currentDate.toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
                 content: Buffer.from(readmeContent).toString('base64'),
                 sha: readmeSha,
-                branch: branchName,
+                branch: `${branchName}${randomSuffix}`,
             },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`README updated on branch ${branchName}.`);
+        console.log(`README updated on branch ${branchName}${randomSuffix}.`);
 
         // Create a pull request
         const prResponse = await axios.post(
@@ -227,13 +253,13 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
             {
                 title: `Update README with issues created on ${currentDate.toLocaleDateString('en-GB')}`,
                 body: `This pull request updates the README file with the issues created on ${currentDate.toLocaleDateString('en-GB')}.`,
-                head: branchName,
+                head: `${branchName}${randomSuffix}`,
                 base: 'main',
             },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
         console.log(`Pull request created: ${prResponse.data.html_url}`);
-
+        
         // Fetch the latest main branch SHA to update the branch before merging
         const updatedMainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
             headers: { Authorization: `token ${GITHUB_TOKEN}` },
@@ -242,11 +268,11 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 
         // Update the branch with the latest changes
         await axios.patch(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
+            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}${randomSuffix}`,
             { sha: updatedMainBranchSha },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`Branch ${branchName} updated with latest changes from main.`);
+        console.log(`Branch ${branchName}${randomSuffix} updated with latest changes from main.`);
 
         // Merge the pull request
         await axios.put(
@@ -261,6 +287,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         process.exit(1);
     }
 }
+
 
 // Main function to execute the workflow
 async function main() {
