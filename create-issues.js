@@ -285,7 +285,7 @@ console.log(`Branch ${branchName}${randomSuffix} deleted.`);
 // Main function to execute the workflow
 async function main() {
     const issueNumbers = [];
-    const issueCount = Math.floor(Math.random() * 3) + 1; // Random number between 1 and 3
+    const issueCount = Math.floor(Math.random() * 2) + 1; // Random number between 1 and 2
     console.log(`Attempting to create ${issueCount} issues.`);
 
     for (let i = 0; i < issueCount; i++) {
