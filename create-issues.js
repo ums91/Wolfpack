@@ -234,6 +234,20 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         );
         console.log(`Pull request created: ${prResponse.data.html_url}`);
 
+        // Fetch the latest main branch SHA to update the branch before merging
+        const updatedMainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` },
+        });
+        const updatedMainBranchSha = updatedMainBranchResponse.data.object.sha;
+
+        // Update the branch with the latest changes
+        await axios.patch(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
+            { sha: updatedMainBranchSha },
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+        console.log(`Branch ${branchName} updated with latest changes from main.`);
+
         // Merge the pull request
         await axios.put(
             `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prResponse.data.number}/merge`,
@@ -241,13 +255,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
         console.log(`Pull request merged.`);
-
-        // Delete the branch
-        await axios.delete(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`, {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` },
-        });
-        console.log(`Branch ${branchName} deleted.`);
-
+        
     } catch (error) {
         console.error('Error updating README:', error.response ? error.response.data : error.message);
         process.exit(1);
@@ -257,14 +265,20 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 // Main function to execute the workflow
 async function main() {
     const issueNumbers = [];
-    const totalIssues = 2; // Specify the total number of issues to create
+    const issueCount = Math.floor(Math.random() * 3); // Random number between 0 and 2
 
-    for (let i = 0; i < totalIssues; i++) {
+    for (let i = 0; i < issueCount; i++) {
         const issueNumber = await createGitHubIssue();
         issueNumbers.push(issueNumber);
     }
 
-    await updateReadmeWithIssues(issueNumbers, issueNumbers.length);
+    // Update the README with the issues created today only if there are issues created
+    if (issueCount > 0) {
+        await updateReadmeWithIssues(issueNumbers, issueCount);
+    } else {
+        console.log('No issues created today, skipping README update.');
+    }
 }
 
-main();
+// Execute the main function
+main().catch(err => console.error('Error in main function:', err));
