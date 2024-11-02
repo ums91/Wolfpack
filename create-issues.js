@@ -207,17 +207,17 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
                 await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}${randomSuffix}`, {
                     headers: { Authorization: `token ${GITHUB_TOKEN}` },
                 });
-                // If we reach here, the branch exists, so we generate a new name
-                randomSuffix = `-${generateRandomString(5)}`; // Add a random suffix
+                randomSuffix = `-${generateRandomString(5)}`; // Add a random suffix if branch exists
             } catch (error) {
                 if (error.response.status === 404) {
-                    // Branch does not exist, we can use the current branch name
                     branchExists = false;
                 } else {
-                    throw error; // Re-throw if it's a different error
+                    throw error;
                 }
             }
         }
+
+        branchName += randomSuffix; // Update branchName with suffix if necessary
 
         // Fetch the SHA of the main branch
         const mainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
@@ -228,10 +228,10 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         // Create the new branch
         await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`,
-            { ref: `refs/heads/${branchName}${randomSuffix}`, sha: mainBranchSha },
+            { ref: `refs/heads/${branchName}`, sha: mainBranchSha },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`Branch ${branchName}${randomSuffix} created.`);
+        console.log(`Branch ${branchName} created.`);
 
         // Fetch the current README file to get the SHA
         const readmeResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`, {
@@ -243,46 +243,45 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         await axios.put(
             `https://api.github.com/repos/${repoOwner}/${repoName}/contents/README.md`,
             {
-                message: `Issues for today (${currentDate.toLocaleDateString('en-GB')}) - ${issueCount} issues created`,
+                message: `Issues created on ${currentDate.toISOString().slice(0, 10)}`,
                 content: Buffer.from(readmeContent).toString('base64'),
+                branch: branchName,
                 sha: readmeSha,
-                branch: `${branchName}${randomSuffix}`,
             },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`README updated on branch ${branchName}${randomSuffix}.`);
+        console.log(`README updated on branch ${branchName}.`);
 
         // Create a pull request
-        const prResponse = await axios.post(
+        const pullRequestResponse = await axios.post(
             `https://api.github.com/repos/${repoOwner}/${repoName}/pulls`,
             {
-                title: `Update README with issues created on ${currentDate.toLocaleDateString('en-GB')}`,
-                body: `This pull request updates the README file with the issues created on ${currentDate.toLocaleDateString('en-GB')}.`,
-                head: `${branchName}${randomSuffix}`,
+                title: `Update README with issues created on ${currentDate.toISOString().slice(0, 10)}`,
+                head: branchName,
                 base: 'main',
+                body: `Updating README to reflect issues created on ${currentDate.toISOString().slice(0, 10)}`,
             },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`Pull request created: ${prResponse.data.html_url}`);
+        console.log(`Pull request created: ${pullRequestResponse.data.html_url}`);
 
-               // Merge the pull request
+        // Merge the pull request
         await axios.put(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prResponse.data.number}/merge`,
-            {},
+            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${pullRequestResponse.data.number}/merge`,
+            { commit_title: `Merging README update for ${currentDate.toISOString().slice(0, 10)}` },
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`Pull request merged.`);
-        
+        console.log('Pull request merged.');
+
         // Delete the branch after merging
         await axios.delete(
             `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
         console.log(`Branch ${branchName} deleted.`);
-        
+
     } catch (error) {
         console.error('Error updating README or deleting branch:', error.response ? error.response.data : error.message);
-        process.exit(1);
     }
 }
 
