@@ -84,14 +84,19 @@ async function createGitHubIssue() {
         console.log(`Issue created: ${response.data.html_url}`);
         const issueNumber = response.data.number;
 
-        // Perform actions with delays
-        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)); // Wait 5 minutes to post the comment
+        // Delay before posting a comment
+        console.log('Waiting 5 minutes before adding a comment...');
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
         await addCommentToIssue(repoOwner, repoName, issueNumber);
         
-        await new Promise(resolve => setTimeout(resolve, 2 * 60 * 1000)); // Wait 2 minutes to update labels
+        // Delay before updating labels
+        console.log('Waiting 2 minutes before updating labels...');
+        await new Promise(resolve => setTimeout(resolve, 2 * 60 * 1000));
         await updateLabels(repoOwner, repoName, issueNumber);
         
-        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)); // Wait 5 minutes to close the issue
+        // Delay before closing the issue
+        console.log('Waiting 5 minutes before closing the issue...');
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
         await closeIssue(repoOwner, repoName, issueNumber);
 
         return issueNumber; // Return the issue number
