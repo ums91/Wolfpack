@@ -257,7 +257,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
 // Main function to execute the workflow
 async function main() {
     const issueNumbers = [];
-    const totalIssues = 5; // Specify the total number of issues to create
+    const totalIssues = 2; // Specify the total number of issues to create
 
     for (let i = 0; i < totalIssues; i++) {
         const issueNumber = await createGitHubIssue();
