@@ -259,20 +259,6 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
         console.log(`Pull request created: ${prResponse.data.html_url}`);
-        
-        // Fetch the latest main branch SHA to update the branch before merging
-        const updatedMainBranchResponse = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` },
-        });
-        const updatedMainBranchSha = updatedMainBranchResponse.data.object.sha;
-
-        // Update the branch with the latest changes
-        await axios.patch(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}${randomSuffix}`,
-            { sha: updatedMainBranchSha },
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
-        console.log(`Branch ${branchName}${randomSuffix} updated with latest changes from main.`);
 
         // Merge the pull request
         await axios.put(
@@ -281,7 +267,7 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
         console.log(`Pull request merged.`);
-        
+
     } catch (error) {
         console.error('Error updating README:', error.response ? error.response.data : error.message);
         process.exit(1);
