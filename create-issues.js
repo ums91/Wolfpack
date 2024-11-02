@@ -274,6 +274,13 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
     }
 }
 
+// Delete the branch after merging
+await axios.delete(
+    `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}${randomSuffix}`,
+    { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+);
+console.log(`Branch ${branchName}${randomSuffix} deleted.`);
+
 
 // Main function to execute the workflow
 async function main() {
