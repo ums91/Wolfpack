@@ -260,26 +260,26 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         );
         console.log(`Pull request created: ${prResponse.data.html_url}`);
 
-        // Merge the pull request
+               // Merge the pull request
         await axios.put(
             `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prResponse.data.number}/merge`,
             {},
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
         console.log(`Pull request merged.`);
-
+        
+        // Delete the branch after merging
+        await axios.delete(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
+            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+        console.log(`Branch ${branchName} deleted.`);
+        
     } catch (error) {
-        console.error('Error updating README:', error.response ? error.response.data : error.message);
+        console.error('Error updating README or deleting branch:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 }
-
-// Delete the branch after merging
-await axios.delete(
-    `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}${randomSuffix}`,
-    { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-);
-console.log(`Branch ${branchName}${randomSuffix} deleted.`);
 
 
 // Main function to execute the workflow
