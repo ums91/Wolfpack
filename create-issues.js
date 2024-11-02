@@ -84,19 +84,15 @@ async function createGitHubIssue() {
         console.log(`Issue created: ${response.data.html_url}`);
         const issueNumber = response.data.number;
 
-        // Schedule actions with delays
-        setTimeout(async () => {
-            await addCommentToIssue(repoOwner, repoName, issueNumber);
-            
-            setTimeout(async () => {
-                await updateLabels(repoOwner, repoName, issueNumber);
-                
-                setTimeout(async () => {
-                    await closeIssue(repoOwner, repoName, issueNumber);
-                }, 5 * 60 * 1000);  // Wait 5 minutes to close the issue
-            }, 2 * 60 * 1000);  // Wait 2 minutes to update labels
-
-        }, 5 * 60 * 1000);  // Wait 5 minutes to post the comment
+        // Perform actions with delays
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)); // Wait 5 minutes to post the comment
+        await addCommentToIssue(repoOwner, repoName, issueNumber);
+        
+        await new Promise(resolve => setTimeout(resolve, 2 * 60 * 1000)); // Wait 2 minutes to update labels
+        await updateLabels(repoOwner, repoName, issueNumber);
+        
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)); // Wait 5 minutes to close the issue
+        await closeIssue(repoOwner, repoName, issueNumber);
 
         return issueNumber; // Return the issue number
 
@@ -238,24 +234,19 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
         );
         console.log(`Pull request created: ${prResponse.data.html_url}`);
 
-                // Merge the pull request
-        const prNumber = prResponse.data.number;
+        // Merge the pull request
         await axios.put(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}/merge`,
-            {
-                commit_title: `Merge README update for issues created on ${currentDate.toLocaleDateString('en-GB')}`,
-                commit_message: `Automated merge of README update with issue details for ${issueCount} issues created.`,
-            },
+            `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prResponse.data.number}/merge`,
+            {},
             { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
         );
-        console.log(`Pull request #${prNumber} merged.`);
+        console.log(`Pull request merged.`);
 
-        // Delete the branch after merging
-        await axios.delete(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`,
-            { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
-        );
-        console.log(`Branch ${branchName} deleted after merge.`);
+        // Delete the branch
+        await axios.delete(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs/heads/${branchName}`, {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` },
+        });
+        console.log(`Branch ${branchName} deleted.`);
 
     } catch (error) {
         console.error('Error updating README:', error.response ? error.response.data : error.message);
@@ -263,21 +254,17 @@ async function updateReadmeWithIssues(issueNumbers, issueCount) {
     }
 }
 
-// Main function to create issues and update README
+// Main function to execute the workflow
 async function main() {
-    const issuesCreated = [];
-    const numberOfIssuesToCreate = 3;
+    const issueNumbers = [];
+    const totalIssues = 5; // Specify the total number of issues to create
 
-    for (let i = 0; i < numberOfIssuesToCreate; i++) {
+    for (let i = 0; i < totalIssues; i++) {
         const issueNumber = await createGitHubIssue();
-        issuesCreated.push(issueNumber);
+        issueNumbers.push(issueNumber);
     }
 
-    await updateReadmeWithIssues(issuesCreated, issuesCreated.length);
+    await updateReadmeWithIssues(issueNumbers, issueNumbers.length);
 }
 
-main().catch(error => {
-    console.error('An error occurred in the main function:', error.message);
-    process.exit(1);
-});
-
+main();
