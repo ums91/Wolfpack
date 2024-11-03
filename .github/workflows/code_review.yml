@@ -29,10 +29,8 @@ jobs:
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          mv pylint-report.txt pylint-report.txt # Save in the main path of the repo
           git add pylint-report.txt
           git commit -m "Daily code review report [$(date +'%Y-%m-%d')]"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}
-
