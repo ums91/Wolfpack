@@ -50,7 +50,7 @@ def generate_review_report():
 -------------------------------------
         Pull Request Summary
 -------------------------------------
-{('\n'.join(report_summary)) if report_summary else "No pull requests available.\n Summary:\nAll good, no pull requests to review."}
+{('\n'.join(report_summary)) if report_summary else "No pull requests available.\nSummary:\nAll good, no pull requests to review."}
 
 -------------------------------------
     Individual Pull Request Details
