@@ -18,9 +18,25 @@ jobs:
         with:
           python-version: '3.x' # Adjust to your Python version if needed
 
-      - name: Install pylint
-        run: pip install pylint
+      - name: Install pylint and PyGithub
+        run: |
+          pip install pylint PyGithub
 
       - name: Run pylint on code and display report
+        id: pylint_run
         run: |
-          pylint **/*.py || true
+          pylint_output=$(pylint . || true)
+          echo "${pylint_output}" > pylint_report.txt
+          echo "::set-output name=result::$(echo "${pylint_output}" | grep -c '^[^ ]')"
+          cat pylint_report.txt
+
+      - name: Create issue if pylint issues found
+        if: steps.pylint_run.outputs.result != '0'
+        run: |
+          ISSUE_TITLE="Automated Code Review Issues Found"
+          ISSUE_BODY="$(cat pylint_report.txt)"
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.WOLFPACK_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/ums91/Wolfpack/issues \
+            -d "{\"title\":\"${ISSUE_TITLE}\",\"body\":\"${ISSUE_BODY}\"}"
