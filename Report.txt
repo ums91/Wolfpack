@@ -10,7 +10,7 @@
         Pull Request Summary
 -------------------------------------
 No pull requests available.
- Summary:
+Summary:
 All good, no pull requests to review.
 
 -------------------------------------
