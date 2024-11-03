@@ -1,1 +1,38 @@
+name: Automated Code Review
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x' # Adjust to your Python version if needed
+
+      - name: Install pylint
+        run: pip install pylint
+
+      - name: Run pylint on code and save report
+        run: |
+          pylint **/*.py > pylint-report.txt || true
+
+      - name: Commit and push pylint report
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          mv pylint-report.txt pylint-report.txt # Save in the main path of the repo
+          git add pylint-report.txt
+          git commit -m "Daily code review report [$(date +'%Y-%m-%d')]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}
 
