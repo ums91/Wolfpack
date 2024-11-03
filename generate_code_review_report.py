@@ -43,19 +43,22 @@ def generate_review_report():
           Code Review Report
 ======================================
 
-Date: {current_date}
+        Date: {current_date}
 
-Repository: {REPO_OWNER}/{REPO_NAME}
+  Repository: {REPO_OWNER}/{REPO_NAME}
 
 -------------------------------------
         Pull Request Summary
 -------------------------------------
-{('\n'.join(report_summary)) if report_summary else "No pull requests available.\nSummary: \nAll good, no pull requests to review."}
+{('\n'.join(report_summary)) if report_summary else "No pull requests available.
+              Summary: 
+All good, no pull requests to review."}
 
 -------------------------------------
     Individual Pull Request Details
 -------------------------------------
-{('\n'.join(report_details)) if report_details else "No individual pull requests to review.\nEverything is running smoothly."}
+{('\n'.join(report_details)) if report_details else "No individual pull requests to review.
+    Everything is running smoothly."}
 
 =====================================
             End of Report
