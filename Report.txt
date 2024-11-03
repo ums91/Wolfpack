@@ -9,12 +9,14 @@ Repository: ums91/Wolfpack
 --------------------------
 Pull Request Summary
 --------------------------
-No pull requests available. Summary: All good, no pull requests to review.
+No pull requests available. 
+ Summary: All good, no pull requests to review.
 
 --------------------------
 Individual Pull Request Details
 --------------------------
-No individual pull requests to review. Everything is running smoothly.
+No individual pull requests to review. 
+ Everything is running smoothly.
 
 ==========================
       End of Report
