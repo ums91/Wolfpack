@@ -3,7 +3,7 @@ name: Code Review Report
 on:
   schedule:
     - cron: "*/30 * * * *"  # Every 30 minutes
-workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   code_review_report:
@@ -27,44 +27,7 @@ jobs:
         env:
           WOLFPACK_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}
         run: |
-          python <<'EOF'
-          import requests
-          import os
-
-          GITHUB_TOKEN = os.getenv('WOLFPACK_TOKEN')
-          REPO_OWNER = 'ums91'
-          REPO_NAME = 'Wolfpack'
-
-          headers = {
-              "Authorization": f"token {GITHUB_TOKEN}",
-              "Accept": "application/vnd.github.v3+json",
-          }
-
-          def get_pull_requests():
-              url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls"
-              response = requests.get(url, headers=headers)
-              return response.json() if response.status_code == 200 else []
-
-          def generate_review_report():
-              pull_requests = get_pull_requests()
-              report = []
-
-              for pr in pull_requests:
-                  pr_number = pr["number"]
-                  pr_title = pr["title"]
-                  pr_url = pr["html_url"]
-                  status = "Passed automated checks" if passes_checks(pr) else "Failed automated checks"
-                  report.append(f"PR #{pr_number}: {pr_title}\nURL: {pr_url}\nStatus: {status}\n")
-
-              with open("Report.txt", "w") as file:
-                  file.write("Code Review Report:\n\n")
-                  file.write("\n".join(report))
-
-          def passes_checks(pr):
-              return True
-
-          generate_review_report()
-          EOF
+          python generate_code_review_report.py
 
       - name: Commit and push Report.txt
         run: |
