@@ -25,6 +25,11 @@ jobs:
         run: |
           pylint **/*.py > Report.txt || true
 
+      - name: Display GitHub context
+        run: |
+          echo "GitHub repository: ${{ github.repository }}"
+          echo "GitHub ref: ${{ github.ref }}"
+
       - name: Commit and push pylint report
         run: |
           git config --local user.name "github-actions[bot]"
