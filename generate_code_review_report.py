@@ -28,10 +28,13 @@ def generate_review_report():
         status = "Passed automated checks" if passes_checks(pr) else "Failed automated checks"
         report.append(f"PR #{pr_number}: {pr_title}\nURL: {pr_url}\nStatus: {status}\n")
 
-    # Write the report to Report.txt
+    # Check if the report is empty and write appropriate message
     with open("Report.txt", "w") as file:
-        file.write("Code Review Report:\n\n")
-        file.write("\n".join(report))
+        if report:
+            file.write("Code Review Report:\n\n")
+            file.write("\n".join(report))
+        else:
+            file.write("All good, up and running")
 
 def passes_checks(pr):
     # Placeholder for custom checks (e.g., linting, static analysis)
