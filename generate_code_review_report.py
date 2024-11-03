@@ -39,27 +39,27 @@ def generate_review_report():
     # Prepare the final report
     current_date = datetime.now().strftime("%Y-%m-%d")
     report_text = f"""
-==========================
-      Code Review Report
-==========================
+======================================
+          Code Review Report
+======================================
 
 Date: {current_date}
 
 Repository: {REPO_OWNER}/{REPO_NAME}
 
---------------------------
-Pull Request Summary
---------------------------
-{('\n'.join(report_summary)) if report_summary else "No pull requests available. \n Summary: All good, no pull requests to review."}
+-------------------------------------
+        Pull Request Summary
+-------------------------------------
+{('\n'.join(report_summary)) if report_summary else "No pull requests available.\nSummary: \nAll good, no pull requests to review."}
 
---------------------------
-Individual Pull Request Details
---------------------------
-{('\n'.join(report_details)) if report_details else "No individual pull requests to review. \n Everything is running smoothly."}
+-------------------------------------
+    Individual Pull Request Details
+-------------------------------------
+{('\n'.join(report_details)) if report_details else "No individual pull requests to review.\nEverything is running smoothly."}
 
-==========================
-      End of Report
-==========================
+=====================================
+            End of Report
+=====================================
 """
 
     # Write report to Report.txt
