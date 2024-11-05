@@ -30,7 +30,7 @@ jobs:
           bandit -r . -f txt -o SAST_REPORT.txt
 
       - name: Upload SAST Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SAST_REPORT
           path: SAST_REPORT.txt
