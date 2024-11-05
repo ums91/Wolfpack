@@ -1,0 +1,47 @@
+name: SAST Scan
+
+on:
+  push:
+    branches:
+      - '**' # Triggers on pushes to all branches
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+jobs:
+  sast-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install SAST Tool (e.g., Bandit for Python projects)
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+
+      - name: Run SAST Scan
+        run: |
+          bandit -r . -f txt -o SAST_REPORT.txt
+
+      - name: Upload SAST Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: SAST_REPORT
+          path: SAST_REPORT.txt
+
+      - name: Commit SAST Report
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add SAST_REPORT.txt
+          git commit -m "Add SAST report"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.WOLFPACK_TOKEN }}
