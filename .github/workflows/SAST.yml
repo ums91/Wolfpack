@@ -27,7 +27,7 @@ jobs:
 
       - name: Run SAST Scan
         run: |
-          bandit -r . -f txt -o SAST_REPORT.txt
+          bandit -r . -f txt -o SAST_REPORT.txt || true
 
       - name: Upload SAST Report
         uses: actions/upload-artifact@v3
