@@ -2,7 +2,7 @@ name: Code Review Report
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # Every 30 minutes
+    - cron: "*/40 * * * *"  # Every 40 minutes
   workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
