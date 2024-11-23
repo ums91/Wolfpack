@@ -66,6 +66,20 @@ def generate_review_report():
     with open("Report.txt", "w") as file:
         file.write(report_text.strip())
 
+    # Update README.md
+    update_readme(report_text.strip())
+
+def update_readme(report_text):
+    readme_path = "README.md"
+    if os.path.exists(readme_path):
+        with open(readme_path, "r") as file:
+            readme_content = file.read()
+
+        updated_content = readme_content.replace("SAST REPORT", report_text)
+
+        with open(readme_path, "w") as file:
+            file.write(updated_content)
+
 def passes_checks(pr):
     # Placeholder for custom checks (e.g., linting, static analysis)
     return True
