@@ -2,7 +2,7 @@ name: Automated Code Review
 
 on:
   schedule:
-    - cron: "0 */2 * * *"  # Runs every 2 hourss
+    - cron: "5 */2 * * *" # Runs every 2 hours and 5 minute
   workflow_dispatch: # Allows manual trigger
 
 jobs:
