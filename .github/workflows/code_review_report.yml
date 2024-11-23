@@ -29,13 +29,13 @@ jobs:
         run: |
           python generate_code_review_report.py
 
-      - name: Commit and push Report.txt
+      - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add Report.txt
+          git add Report.txt README.md
           if ! git diff --cached --quiet; then
-            git commit -m "Update Code Review Report"
+            git commit -m "Update Code Review Report and README.md"
             git push
           else
             echo "No changes to commit"
