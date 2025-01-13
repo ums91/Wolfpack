@@ -1,10 +1,10 @@
-Run started:2025-01-12 17:37:45.327609
+Run started:2025-01-13 17:40:03.412972
 
 Test results:
 >> Issue: [B113:request_without_timeout] Call to requests without timeout
    Severity: Medium   Confidence: Low
    CWE: CWE-400 (https://cwe.mitre.org/data/definitions/400.html)
-   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b113_request_without_timeout.html
+   More Info: https://bandit.readthedocs.io/en/1.8.2/plugins/b113_request_without_timeout.html
    Location: ./generate_code_review_report.py:17:15
 16	    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls"
 17	    response = requests.get(url, headers=headers)
