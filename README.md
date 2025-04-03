@@ -1,6 +1,5 @@
 ## Issues Created Today
 
-Total Issues Created: 2
+Total Issues Created: 1
 
-- Issue #380
-- Issue #381
+- Issue #383
