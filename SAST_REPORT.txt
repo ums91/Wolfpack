@@ -1,16 +1,7 @@
-Run started:2025-10-30 17:29:50.671471
+Run started:2025-10-31 17:30:31.243879
 
 Test results:
->> Issue: [B113:request_without_timeout] Call to requests without timeout
-   Severity: Medium   Confidence: Low
-   CWE: CWE-400 (https://cwe.mitre.org/data/definitions/400.html)
-   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b113_request_without_timeout.html
-   Location: ./generate_code_review_report.py:17:15
-16	    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls"
-17	    response = requests.get(url, headers=headers)
-18	    return response.json() if response.status_code == 200 else []
-
---------------------------------------------------
+	No issues identified.
 
 Code scanned:
 	Total lines of code: 59
@@ -21,11 +12,12 @@ Run metrics:
 	Total issues (by severity):
 		Undefined: 0
 		Low: 0
-		Medium: 1
+		Medium: 0
 		High: 0
 	Total issues (by confidence):
 		Undefined: 0
-		Low: 1
+		Low: 0
 		Medium: 0
 		High: 0
-Files skipped (0):
+Files skipped (1):
+	./generate_code_review_report.py (exception while scanning file)
