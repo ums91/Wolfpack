@@ -2,5 +2,5 @@
 
 Total Issues Created: 2
 
-- Issue #704
-- Issue #705
+- Issue #707
+- Issue #708
