@@ -2,4 +2,4 @@
 
 Total Issues Created: 1
 
-- Issue #712
+- Issue #714
